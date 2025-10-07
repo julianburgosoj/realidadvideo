@@ -3,17 +3,17 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>AR - Escanear Diseño (Video)</title>
+  <title>AR - Escanear Diseño (Video Interactivo)</title>
 
-  <!-- Librerías principales de A-Frame y MindAR -->
+  <!-- Librerías principales -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0" />
 
   <style>
-    /* ===== INTERFAZ GENERAL ===== */
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       height: 100%;
@@ -23,7 +23,7 @@
       color: #fff;
     }
 
-    /* ===== Pantalla inicial ===== */
+    /* Pantalla de inicio */
     #inicio {
       position: absolute;
       inset: 0;
@@ -43,7 +43,6 @@
       text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
     }
 
-    /* ===== Botón principal ===== */
     #btnEscanear {
       background: linear-gradient(90deg, #00d4ff 0%, #5efce8 100%);
       color: #052023;
@@ -61,7 +60,7 @@
       transform: scale(1.03);
     }
 
-    /* ===== Contenedor de la escena AR ===== */
+    /* Escena AR */
     #ar-wrapper {
       width: 100vw;
       height: 100vh;
@@ -70,7 +69,7 @@
       z-index: 1;
     }
 
-    /* ===== Corrige fondo negro: fuerza el video de la cámara ===== */
+    /* Corrige fondo negro */
     .mindar-video {
       position: fixed !important;
       top: 0;
@@ -81,7 +80,8 @@
       z-index: 0 !important;
     }
 
-    a-scene, canvas {
+    a-scene,
+    canvas {
       position: fixed !important;
       top: 0;
       left: 0;
@@ -91,7 +91,7 @@
       background: transparent !important;
     }
 
-    /* ===== Mensaje de ayuda ===== */
+    /* Mensaje */
     #hint {
       position: absolute;
       bottom: 18px;
@@ -111,28 +111,22 @@
   <!-- Pantalla inicial -->
   <div id="inicio">
     <h1>📹 Escanea tu diseño</h1>
-    <p>Toca el botón para activar la cámara y ver el video.</p>
+    <p>Toca el botón para activar la cámara y ver el video AR.</p>
     <button id="btnEscanear" type="button">📷 Escanear diseño</button>
   </div>
 
-  <!-- Contenedor de la escena AR -->
+  <!-- Contenedor AR -->
   <div id="ar-wrapper"></div>
 
   <script>
-    /**
-     * 🚀 Script principal
-     * Activa la cámara y muestra el video en realidad aumentada
-     */
     const btn = document.getElementById('btnEscanear');
     const inicio = document.getElementById('inicio');
     const arWrapper = document.getElementById('ar-wrapper');
 
     btn.addEventListener('click', () => {
-      // Oculta la pantalla inicial y muestra la escena
       inicio.style.display = 'none';
       arWrapper.style.display = 'block';
 
-      // Carga la escena solo después del clic (evita bloqueos de cámara)
       arWrapper.innerHTML = `
         <a-scene
           mindar-image="imageTargetSrc: vid.mind;"
@@ -142,17 +136,22 @@
           vr-mode-ui="enabled:false"
           device-orientation-permission-ui="enabled:false">
 
-          <!-- Carga del video -->
           <a-assets>
-            <video id="miVideo" src="video.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
+            <!-- 🎥 Video con autoplay, muted, playsinline y loop -->
+            <video id="videoAR" src="video.mp4" autoplay muted playsinline loop crossorigin="anonymous"></video>
           </a-assets>
 
           <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-          <!-- Target AR (el marcador de tu diseño) -->
+          <!-- Elemento AR que mostrará el video -->
           <a-entity mindar-image-target="targetIndex: 0">
-            <!-- Plano donde se proyecta el video -->
-            <a-video src="#miVideo" width="1" height="0.56" position="0 0 0" rotation="0 0 0"></a-video>
+            <a-video
+              src="#videoAR"
+              width="1"
+              height="0.5625"
+              position="0 0 0"
+              rotation="0 0 0">
+            </a-video>
           </a-entity>
         </a-scene>
       `;
@@ -164,19 +163,10 @@
       document.body.appendChild(hint);
 
       const sceneEl = document.querySelector('a-scene');
-      const videoEl = document.getElementById('miVideo');
-
-      // Controla la reproducción del video
-      sceneEl.addEventListener('targetFound', () => {
-        hint.innerText = '🎬 Video reproduciéndose';
-        videoEl.play();
-      });
-
-      sceneEl.addEventListener('targetLost', () => {
-        hint.innerText = 'Apunta la cámara a tu diseño';
-        videoEl.pause();
-      });
+      sceneEl.addEventListener('targetFound', () => hint.innerText = '🎬 Video detectado, reproduciendo');
+      sceneEl.addEventListener('targetLost', () => hint.innerText = 'Apunta la cámara a tu diseño');
     });
   </script>
 </body>
+
 </html>
