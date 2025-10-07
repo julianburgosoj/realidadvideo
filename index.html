@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <title>AR - Escanear Diseño (Video Interactivo)</title>
+
+    <!-- Librerías principales -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0" />
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f1724 0%, #0b3d91 50%, #0b2b5a 100%);
+            color: #fff;
+        }
+
+        /* Pantalla de inicio */
+        #inicio {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            text-align: center;
+            padding: 24px;
+            z-index: 5;
+        }
+
+        #inicio h1 {
+            margin: 0;
+            font-size: 28px;
+            text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        #btnEscanear {
+            background: linear-gradient(90deg, #00d4ff 0%, #5efce8 100%);
+            color: #052023;
+            padding: 14px 34px;
+            border-radius: 28px;
+            border: none;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.18);
+            transition: transform .14s ease, box-shadow .14s ease;
+        }
+
+        #btnEscanear:hover {
+            transform: scale(1.03);
+        }
+
+        /* Escena AR */
+        #ar-wrapper {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Corrige fondo negro */
+        .mindar-video {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: cover !important;
+            z-index: 0 !important;
+        }
+
+        a-scene,
+        canvas {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 1 !important;
+            background: transparent !important;
+        }
+
+        /* Mensaje */
+        #hint {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            z-index: 6;
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Pantalla inicial -->
+    <div id="inicio">
+        <h1>📹 Escanea tu diseño</h1>
+        <p>Toca el botón para activar la cámara y ver el video AR.</p>
+        <button id="btnEscanear" type="button">📷 Escanear diseño</button>
+    </div>
+
+    <!-- Contenedor AR -->
+    <div id="ar-wrapper"></div>
+
+    <script>
+        const btn = document.getElementById('btnEscanear');
+        const inicio = document.getElementById('inicio');
+        const arWrapper = document.getElementById('ar-wrapper');
+
+        btn.addEventListener('click', () => {
+            inicio.style.display = 'none';
+            arWrapper.style.display = 'block';
+
+            arWrapper.innerHTML = `
+        <a-scene
+          mindar-image="imageTargetSrc: vid.mind;"
+          color-space="sRGB"
+          embedded
+          renderer="colorManagement:true, physicallyCorrectLights, alpha:true"
+          vr-mode-ui="enabled:false"
+          device-orientation-permission-ui="enabled:false">
+
+          <a-assets>
+            <!-- 🎥 Video con autoplay, muted, playsinline y loop -->
+            <video id="videoAR" src="video.mp4" autoplay muted playsinline loop crossorigin="anonymous"></video>
+          </a-assets>
+
+          <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+          <!-- Elemento AR que mostrará el video -->
+          <a-entity mindar-image-target="targetIndex: 0">
+            <a-video
+              src="#videoAR"
+              width="1"
+              height="0.5625"
+              position="0 0 0"
+              rotation="0 0 0">
+            </a-video>
+          </a-entity>
+        </a-scene>
+      `;
+
+            // Mensaje visual
+            const hint = document.createElement('div');
+            hint.id = 'hint';
+            hint.innerText = 'Apunta la cámara a tu diseño';
+            document.body.appendChild(hint);
+
+            const sceneEl = document.querySelector('a-scene');
+            sceneEl.addEventListener('targetFound', () => hint.innerText = '🎬 Video detectado, reproduciendo');
+            sceneEl.addEventListener('targetLost', () => hint.innerText = 'Apunta la cámara a tu diseño');
+        });
+    </script>
+</body>
+
+</html>
